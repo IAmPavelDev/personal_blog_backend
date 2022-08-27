@@ -1,0 +1,19 @@
+{
+  "name": "personalblogbackend",
+  "version": "1.0.0",
+  "description": "backend on nestJS for personal blog",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/IAmPavelDev/personal_blog_backend.git"
+  },
+  "author": "IAmPavel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IAmPavelDev/personal_blog_backend/issues"
+  },
+  "homepage": "https://github.com/IAmPavelDev/personal_blog_backend#readme"
+}
