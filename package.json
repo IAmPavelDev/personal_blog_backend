@@ -22,7 +22,9 @@
   "dependencies": {
     "@nestjs/common": "^9.0.0",
     "@nestjs/core": "^9.0.0",
+    "@nestjs/mongoose": "^9.2.0",
     "@nestjs/platform-express": "^9.0.0",
+    "mongoose": "^6.5.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.5.5"
@@ -35,6 +37,7 @@
     "@types/jest": "^28.1.4",
     "@types/node": "^18.0.3",
     "@types/supertest": "^2.0.12",
+    "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "^5.30.5",
     "@typescript-eslint/parser": "^5.30.5",
     "eslint": "^8.19.0",
