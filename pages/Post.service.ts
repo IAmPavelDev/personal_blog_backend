@@ -13,8 +13,9 @@ export class PostService {
         return this.PostRepository.findOne({ postId });
     }
 
-    async getPosts(): Promise<Post[]> {
-        return this.PostRepository.find({});
+    async getPosts(title?: string): Promise<Post[]> {
+        const postFilterQuery = title ? { title } : null;
+        return this.PostRepository.find(postFilterQuery);
     }
 
     async createPost(

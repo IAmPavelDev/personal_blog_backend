@@ -1,24 +1,30 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
 import { Document } from 'mongoose';
 
 export type PostDocument = Post & Document;
 
 @Schema()
 export class Post {
-  @Prop()
-  postId: string;
+    @ApiProperty()
+    @Prop()
+    postId: string;
 
-  @Prop()
-  creationDate: Date;
+    @ApiProperty()
+    @Prop()
+    creationDate: Date;
 
-  @Prop()
-  title: string;
+    @ApiProperty()
+    @Prop()
+    title: string;
 
-  @Prop()
-  content: string;
+    @ApiProperty()
+    @Prop()
+    content: string;
 
-  @Prop([String])
-  tags: string[];
+    @ApiProperty({ required: false })
+    @Prop([String])
+    tags: string[];
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);
