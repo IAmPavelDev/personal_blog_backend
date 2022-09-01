@@ -31,4 +31,8 @@ export class PostRepository {
             new: true,
         });
     }
+
+    async delete(postId: FilterQuery<Post>): Promise<string> {
+        return (await this.postModel.findOneAndDelete(postId)).title;
+    }
 }

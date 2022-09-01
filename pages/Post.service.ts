@@ -36,6 +36,10 @@ export class PostService {
         postId: string,
         postUpdates: UpdatePostDto,
     ): Promise<Post> {
-        return this.PostRepository.update({ postId }, postUpdates);
+        return this.PostRepository.update( {postId} , postUpdates);
+    }
+
+    async deletePost(postId: string) {
+        return this.PostRepository.delete({postId});
     }
 }
