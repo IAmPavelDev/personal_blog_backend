@@ -8,7 +8,7 @@ export class CreatePostDto {
 
     @ApiProperty()
     content: string;
+    
     @ApiProperty({ required: false })
-    @MaxLength(10)
     tags?: string[];
 }
