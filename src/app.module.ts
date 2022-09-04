@@ -11,7 +11,7 @@ import { AuthModule } from './auth/auth.module';
 @Module({
     imports: [
         MongooseModule.forRoot(
-            'mongodb+srv://IAmPavel:28NwUWgjK5KSyNH@personalblog.fi4k9ca.mongodb.net/?retryWrites=true&w=majority',
+            '',
         ),
         PostsModule,
         UsersModule,
