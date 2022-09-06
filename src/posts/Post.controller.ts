@@ -19,7 +19,7 @@ import {
 import { CreatePostDto } from './Dto/create-post.dto';
 import { UpdatePostDto } from './Dto/update-post.dto';
 import { PostService } from './Post.service';
-import { Post } from './Schemas/Post.schema';
+import { Post } from '../Schemas/Post.schema';
 
 @ApiTags('Posts')
 @Controller('posts')

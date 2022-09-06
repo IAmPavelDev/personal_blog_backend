@@ -1,30 +1,41 @@
-import { Injectable } from '@nestjs/common';
-
-export type User = {
-    id: number;
-    name: string;
-    username: string;
-    password: string;
-};
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { User } from 'src/Schemas/User.schema';
+import { CreateUserDto } from './Dto/create-user.dto';
+import { UsersRepository } from './users.repository';
+import bcrypt from 'bcrypt';
+import { v4 as uuidv4 } from 'uuid';
+import { UpdateUserDto } from './Dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
-    private readonly users: User[] = [
-        {
-            id: 1,
-            name: 'Pavel',
-            username: 'iampavel',
-            password: '12345678',
-        },
-        {
-            id: 2,
-            name: 'Admin',
-            username: 'admin',
-            password: '12345678admin',
-        },
-    ];
+    constructor(private usersRepository: UsersRepository) {}
 
-    async findOne(username: string): Promise<User | undefined> {
-        return this.users.find((user) => user.username === username);
+    async findOne(filterQuery: string): Promise<User | undefined> {
+        return this.usersRepository.findOne({ filterQuery });
+    }
+
+    async findAll(): Promise<User[]> {
+        return this.usersRepository.find();
+    }
+
+    async create({ name, password }: CreateUserDto): Promise<User> {
+        const hashedPwd = await bcrypt.hash(password, 5);
+        return this.usersRepository.create({
+            userId: uuidv4(),
+            username: name,
+            name,
+            password: hashedPwd,
+        });
+    }
+
+    async update(userId: string, updates: UpdateUserDto): Promise<User> {
+        return this.usersRepository.update({ userId }, updates);
+    }
+
+    async delete(userId: string, password: string): Promise<string> {
+        if (!bcrypt.compare((await this.findOne(userId)).password, password)) {
+            throw new UnauthorizedException();
+        }
+        return this.usersRepository.delete({ userId });
     }
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Post } from './Schemas/Post.schema';
+import { Post } from '../Schemas/Post.schema';
 import { PostRepository } from './Post.repository';
 import { UpdatePostDto } from './Dto/update-post.dto';
 
@@ -39,7 +39,7 @@ export class PostService {
         return this.PostRepository.update( {postId} , postUpdates);
     }
 
-    async deletePost(postId: string) {
+    async deletePost(postId: string): Promise<string> {
         return this.PostRepository.delete({postId});
     }
 }
