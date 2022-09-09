@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 @Injectable()
 export class LocalAuthGuard extends AuthGuard('local') {
     async canActivate(context: ExecutionContext) {
+        console.log("context:  ", context);
         const result = (await super.canActivate(context)) as boolean;
         const request = context.switchToHttp().getRequest();
 

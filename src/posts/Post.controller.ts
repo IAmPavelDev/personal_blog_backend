@@ -8,6 +8,7 @@ import {
     Patch,
     Post as PostDecorator,
     Query,
+    UseGuards,
 } from '@nestjs/common';
 import {
     ApiCreatedResponse,
@@ -20,6 +21,7 @@ import { CreatePostDto } from './Dto/create-post.dto';
 import { UpdatePostDto } from './Dto/update-post.dto';
 import { PostService } from './Post.service';
 import { Post } from '../Schemas/Post.schema';
+import { AuthenticatedGuard } from 'src/auth/authenticated.guard';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -49,6 +51,7 @@ export class PostsController {
         return posts;
     }
 
+    @UseGuards(AuthenticatedGuard)
     @ApiCreatedResponse({ type: Post })
     @PostDecorator()
     async createPost(@Body() createPostDto: CreatePostDto): Promise<Post> {
@@ -59,6 +62,7 @@ export class PostsController {
         );
     }
 
+    @UseGuards(AuthenticatedGuard)
     @ApiOkResponse({type: Post, description: 'patched post'})
     @ApiNotFoundResponse()
     @Patch(':postId')
@@ -72,6 +76,7 @@ export class PostsController {
         return post;
     }
 
+    @UseGuards(AuthenticatedGuard)
     @Delete(':postId')
     async deletePost(@Param('postId') postId: string): Promise<string> {
         const postName = await this.postService.deletePost(postId);
