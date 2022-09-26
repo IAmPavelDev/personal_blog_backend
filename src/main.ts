@@ -2,11 +2,12 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import * as dotenv from 'dotenv';
 import * as session from 'express-session';
 import * as passport from 'passport';
 
-dotenv.config();
+if (process.env.NODE_ENV !== "production") {
+    require("dotenv").config();
+  }
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
 
