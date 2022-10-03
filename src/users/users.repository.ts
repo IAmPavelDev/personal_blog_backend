@@ -10,7 +10,9 @@ export class UsersRepository {
     ) {}
 
     async findOne(postFilterQuery: FilterQuery<User>): Promise<User> {
-        return this.userModel.findOne(postFilterQuery);
+        return this.userModel.findOne({
+            username: postFilterQuery.filterQuery,
+        });
     }
 
     async find(): Promise<User[]> {

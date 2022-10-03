@@ -2,27 +2,20 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import * as session from 'express-session';
-import * as passport from 'passport';
+import * as cookieParser from 'cookie-parser';
 
-if (process.env.NODE_ENV !== "production") {
-    require("dotenv").config();
-  }
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
 
-    app.use(
-        session({
-            secret: process.env.SESSION_SECRET,
-            resave: false,
-            saveUninitialized: false,
-            cookie: { maxAge: 3600000 },
-        }),
-    );
-
-    app.use(passport.initialize());
-    app.use(passport.session());
-
+    app.use(cookieParser());
+    app.enableCors({
+        origin: true,
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+        credentials: true,
+    });
     app.useGlobalPipes(new ValidationPipe());
 
     const config = new DocumentBuilder()

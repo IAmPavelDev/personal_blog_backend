@@ -1,21 +1,30 @@
-import { Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Post,
+    UseGuards,
+    Req,
+    Res,
+    HttpStatus,
+} from '@nestjs/common';
+import { Request, Response } from 'express';
 import { AppService } from './app.service';
-import { AuthenticatedGuard } from './auth/authenticated.guard';
-import { LocalAuthGuard } from './auth/local-auth.guard';
+import { AuthenticatedGuard } from './auth/Authenticated.guard';
+import { LoginGuard } from './auth/login.guard';
 
 @Controller()
 export class AppController {
     constructor(private readonly appService: AppService) {}
 
-    @UseGuards(LocalAuthGuard)
+    @UseGuards(LoginGuard)
     @Post('login')
-    login(@Request() req: any): any {
-        return {msg: "Logged in"};
+    login(@Req() req: Request, @Res() res: Response) {
+        res.status(HttpStatus.OK).send();
     }
 
     @UseGuards(AuthenticatedGuard)
     @Get('protected')
-    getHello(@Request() req: any): any {
-        return req.user;
+    getHello(@Req() req: Request, @Res() res: Response) {
+        res.status(HttpStatus.OK).send(req.user);
     }
 }

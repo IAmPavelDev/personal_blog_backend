@@ -21,7 +21,7 @@ import { CreatePostDto } from './Dto/create-post.dto';
 import { UpdatePostDto } from './Dto/update-post.dto';
 import { PostService } from './Post.service';
 import { Post } from '../Schemas/Post.schema';
-import { AuthenticatedGuard } from 'src/auth/authenticated.guard';
+import { AuthenticatedGuard } from 'src/auth/Authenticated.guard';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -62,17 +62,18 @@ export class PostsController {
         );
     }
 
-    @UseGuards(AuthenticatedGuard)
-    @ApiOkResponse({type: Post, description: 'patched post'})
+    @ApiOkResponse({ type: Post, description: 'patched post' })
     @ApiNotFoundResponse()
+    @UseGuards(AuthenticatedGuard)
     @Patch(':postId')
     async updatePost(
         @Param('postId') postId: string,
         @Body() updatePostDto: UpdatePostDto,
     ): Promise<Post> {
-        console.log(postId);
         const post = await this.postService.updatePost(postId, updatePostDto);
-        if (!post) throw new NotFoundException();
+        if (!post) {
+            throw new NotFoundException();
+        }
         return post;
     }
 
@@ -80,7 +81,9 @@ export class PostsController {
     @Delete(':postId')
     async deletePost(@Param('postId') postId: string): Promise<string> {
         const postName = await this.postService.deletePost(postId);
-        if(!postName) throw new NotFoundException();
+        if (!postName) {
+            throw new NotFoundException();
+        }
         return postName;
     }
 }
