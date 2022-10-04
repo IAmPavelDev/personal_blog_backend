@@ -13,7 +13,6 @@ export class LoginGuard implements CanActivate {
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
         const user = await this.userService.findOne(request.body.username);
-        console.log(request.body);
         if (!user) {
             throw new UnauthorizedException('User not found');
         }
