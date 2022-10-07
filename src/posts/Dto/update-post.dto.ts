@@ -2,9 +2,9 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class UpdatePostDto {
     @ApiProperty()
-    title: string;
+    title?: string;
     @ApiProperty()
-    content: string;
+    content?: string;
     @ApiProperty({required: false})
     tags?: string[];
 }

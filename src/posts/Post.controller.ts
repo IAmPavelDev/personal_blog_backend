@@ -80,10 +80,10 @@ export class PostsController {
     @UseGuards(AuthenticatedGuard)
     @Delete(':postId')
     async deletePost(@Param('postId') postId: string): Promise<string> {
-        const postName = await this.postService.deletePost(postId);
-        if (!postName) {
+        const deletedPostId = await this.postService.deletePost(postId);
+        if (!deletedPostId) {
             throw new NotFoundException();
         }
-        return postName;
+        return JSON.stringify({ deletedPostId });
     }
 }

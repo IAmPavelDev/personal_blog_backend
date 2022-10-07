@@ -33,6 +33,6 @@ export class PostRepository {
     }
 
     async delete(postId: FilterQuery<Post>): Promise<string> {
-        return (await this.postModel.findOneAndDelete(postId)).title;
+        return (await this.postModel.findOneAndDelete(postId)).postId;
     }
 }
