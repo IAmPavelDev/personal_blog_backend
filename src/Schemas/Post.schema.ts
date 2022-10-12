@@ -20,11 +20,15 @@ export class Post {
 
     @ApiProperty()
     @Prop()
+    preview: string;
+
+    @ApiProperty()
+    @Prop()
     content: string;
 
     @ApiProperty({ required: false })
     @Prop([String])
-    tags: string[];
+    tags: Array<{ id: string; tagWord: string }>;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);

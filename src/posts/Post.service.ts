@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Post } from '../Schemas/Post.schema';
 import { PostRepository } from './Post.repository';
 import { UpdatePostDto } from './Dto/update-post.dto';
+import { CreatePostDto } from './Dto/create-post.dto';
 
 @Injectable()
 export class PostService {
@@ -18,16 +19,18 @@ export class PostService {
         return this.PostRepository.find(postFilterQuery);
     }
 
-    async createPost(
-        title: string,
-        content: string,
-        tags: string[],
-    ): Promise<Post> {
+    async createPost({
+        title,
+        content,
+        preview,
+        tags,
+    }: CreatePostDto): Promise<Post> {
         return this.PostRepository.create({
             postId: uuidv4(),
             creationDate: new Date(),
             title,
             content,
+            preview,
             tags,
         });
     }
@@ -36,10 +39,10 @@ export class PostService {
         postId: string,
         postUpdates: UpdatePostDto,
     ): Promise<Post> {
-        return this.PostRepository.update( {postId} , postUpdates);
+        return this.PostRepository.update({ postId }, postUpdates);
     }
 
     async deletePost(postId: string): Promise<string> {
-        return this.PostRepository.delete({postId});
+        return this.PostRepository.delete({ postId });
     }
 }

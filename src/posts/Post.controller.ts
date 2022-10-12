@@ -34,7 +34,7 @@ export class PostsController {
     async getPost(@Param('postId') postId: string): Promise<Post> {
         const posts = await this.postService.getPostById(postId);
         if (!posts) {
-            throw new NotFoundException();
+            throw new NotFoundException("Post not found, post.controller, str:37");
         }
         return posts;
     }
@@ -46,7 +46,7 @@ export class PostsController {
     async getPosts(@Query('title') title?: string): Promise<Post[]> {
         const posts = await this.postService.getPosts(title);
         if (!posts.length) {
-            throw new NotFoundException();
+            throw new NotFoundException("Post not found, post.controller, str:49");
         }
         return posts;
     }
@@ -55,11 +55,7 @@ export class PostsController {
     @ApiCreatedResponse({ type: Post })
     @PostDecorator()
     async createPost(@Body() createPostDto: CreatePostDto): Promise<Post> {
-        return this.postService.createPost(
-            createPostDto.title,
-            createPostDto.content,
-            createPostDto.tags,
-        );
+        return this.postService.createPost(createPostDto);
     }
 
     @ApiOkResponse({ type: Post, description: 'patched post' })
@@ -72,7 +68,7 @@ export class PostsController {
     ): Promise<Post> {
         const post = await this.postService.updatePost(postId, updatePostDto);
         if (!post) {
-            throw new NotFoundException();
+            throw new NotFoundException("Post not found, post.controller, str:71");
         }
         return post;
     }
@@ -82,7 +78,7 @@ export class PostsController {
     async deletePost(@Param('postId') postId: string): Promise<string> {
         const deletedPostId = await this.postService.deletePost(postId);
         if (!deletedPostId) {
-            throw new NotFoundException();
+            throw new NotFoundException("Post not found, post.controller, str:81");
         }
         return JSON.stringify({ deletedPostId });
     }
