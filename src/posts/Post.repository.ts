@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostDocument } from '../Schemas/Post.schema';
 import { FilterQuery, Model } from 'mongoose';
-import { GetPostDto } from './Dto/get-post.dto';
 
 @Injectable()
 export class PostRepository {
@@ -10,12 +9,14 @@ export class PostRepository {
         @InjectModel(Post.name) private postModel: Model<PostDocument>,
     ) {}
 
-    async findOne(postFilterQuery: FilterQuery<Post>): Promise<Post> {
-        return this.postModel.findOne(postFilterQuery);
+    async findOne(postFilterQuery: FilterQuery<Post>): Promise<{content: string; postId: string}> {
+        return this.postModel.findOne(postFilterQuery).select("content postId");
     }
 
-    async find(postFilterQuery?: FilterQuery<GetPostDto>): Promise<Post[]> {
-        return this.postModel.find(postFilterQuery);
+    async find(): Promise<Post[]> {
+        return this.postModel
+            .find()
+            .select('postId creationDate title preview tags');
     }
 
     async create(post: Post): Promise<Post> {

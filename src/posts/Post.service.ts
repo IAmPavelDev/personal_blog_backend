@@ -10,13 +10,12 @@ import { CreatePostDto } from './Dto/create-post.dto';
 export class PostService {
     constructor(private readonly PostRepository: PostRepository) {}
 
-    async getPostById(postId: string): Promise<Post> {
+    async getContentById(postId: string): Promise<{content: string; postId: string}> {
         return this.PostRepository.findOne({ postId });
     }
 
-    async getPosts(title?: string): Promise<Post[]> {
-        const postFilterQuery = title ? { title } : null;
-        return this.PostRepository.find(postFilterQuery);
+    async getPosts(): Promise<Post[]> {
+        return this.PostRepository.find();
     }
 
     async createPost({

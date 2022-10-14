@@ -27,7 +27,7 @@ export class Post {
     content: string;
 
     @ApiProperty({ required: false })
-    @Prop([String])
+    @Prop(Array<{ id: string; tagWord: string }>)
     tags: Array<{ id: string; tagWord: string }>;
 }
 

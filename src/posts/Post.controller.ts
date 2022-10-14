@@ -31,22 +31,25 @@ export class PostsController {
     @ApiOkResponse({ type: Post, description: 'Post by id' })
     @ApiNotFoundResponse()
     @Get(':postId')
-    async getPost(@Param('postId') postId: string): Promise<Post> {
-        const posts = await this.postService.getPostById(postId);
+    async getContent(@Param('postId') postId: string): Promise<{content: string; postId: string}> {
+        const posts = await this.postService.getContentById(postId);
         if (!posts) {
-            throw new NotFoundException("Post not found, post.controller, str:37");
+            throw new NotFoundException(
+                'Post not found, post.controller, str:37',
+            );
         }
         return posts;
     }
 
     @ApiOkResponse({ type: Post, isArray: true, description: 'All posts' })
     @ApiNotFoundResponse()
-    @ApiQuery({ name: 'title', required: false })
     @Get()
-    async getPosts(@Query('title') title?: string): Promise<Post[]> {
-        const posts = await this.postService.getPosts(title);
+    async getPosts(): Promise<Post[]> {
+        const posts = await this.postService.getPosts();
         if (!posts.length) {
-            throw new NotFoundException("Post not found, post.controller, str:49");
+            throw new NotFoundException(
+                'Posts not found, post.controller, str:49',
+            );
         }
         return posts;
     }
@@ -68,7 +71,9 @@ export class PostsController {
     ): Promise<Post> {
         const post = await this.postService.updatePost(postId, updatePostDto);
         if (!post) {
-            throw new NotFoundException("Post not found, post.controller, str:71");
+            throw new NotFoundException(
+                'Post not found, post.controller, str:71',
+            );
         }
         return post;
     }
@@ -78,7 +83,9 @@ export class PostsController {
     async deletePost(@Param('postId') postId: string): Promise<string> {
         const deletedPostId = await this.postService.deletePost(postId);
         if (!deletedPostId) {
-            throw new NotFoundException("Post not found, post.controller, str:81");
+            throw new NotFoundException(
+                'Post not found, post.controller, str:81',
+            );
         }
         return JSON.stringify({ deletedPostId });
     }

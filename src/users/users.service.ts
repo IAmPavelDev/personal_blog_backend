@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { User } from 'src/Schemas/User.schema';
 import { CreateUserDto } from './Dto/create-user.dto';
 import { UsersRepository } from './users.repository';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { UpdateUserDto } from './Dto/update-user.dto';
 

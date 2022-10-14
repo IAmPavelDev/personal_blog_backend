@@ -23,7 +23,7 @@ export class AppController {
     }
 
     @UseGuards(AuthenticatedGuard)
-    @Get('protected')
+    @Get('tockenRefresh')
     getHello(@Req() req: Request, @Res() res: Response) {
         res.status(HttpStatus.OK).send(req.user);
     }
