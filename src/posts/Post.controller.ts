@@ -8,6 +8,7 @@ import {
     Patch,
     Post as PostDecorator,
     Query,
+    Req,
     UseGuards,
 } from '@nestjs/common';
 import {
@@ -22,6 +23,7 @@ import { UpdatePostDto } from './Dto/update-post.dto';
 import { PostService } from './Post.service';
 import { Post } from '../Schemas/Post.schema';
 import { AuthenticatedGuard } from 'src/auth/Authenticated.guard';
+import { Request } from 'express';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -31,7 +33,9 @@ export class PostsController {
     @ApiOkResponse({ type: Post, description: 'Post by id' })
     @ApiNotFoundResponse()
     @Get(':postId')
-    async getContent(@Param('postId') postId: string): Promise<{content: string; postId: string}> {
+    async getContent(
+        @Param('postId') postId: string,
+    ): Promise<{ content: string; postId: string }> {
         const posts = await this.postService.getContentById(postId);
         if (!posts) {
             throw new NotFoundException(
@@ -44,8 +48,19 @@ export class PostsController {
     @ApiOkResponse({ type: Post, isArray: true, description: 'All posts' })
     @ApiNotFoundResponse()
     @Get()
-    async getPosts(): Promise<Post[]> {
-        const posts = await this.postService.getPosts();
+    async getPosts(@Req() req: Request): Promise<Post[]> {
+        let options = {};
+
+        if (req.query.s) {
+            options = {
+                $or: [
+                    { title: new RegExp(req.query.s.toString(), 'i') },
+                    { content: new RegExp(req.query.s.toString(), 'i') },
+                    { preview: new RegExp(req.query.s.toString(), 'i') },
+                ],
+            };
+        }
+        const posts = await this.postService.getPosts(options);
         if (!posts.length) {
             throw new NotFoundException(
                 'Posts not found, post.controller, str:49',

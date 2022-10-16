@@ -13,9 +13,9 @@ export class PostRepository {
         return this.postModel.findOne(postFilterQuery).select("content postId");
     }
 
-    async find(): Promise<Post[]> {
+    async find(options:any): Promise<Post[]> {
         return this.postModel
-            .find()
+            .find(options)
             .select('postId creationDate title preview tags');
     }
 

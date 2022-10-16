@@ -14,8 +14,8 @@ export class PostService {
         return this.PostRepository.findOne({ postId });
     }
 
-    async getPosts(): Promise<Post[]> {
-        return this.PostRepository.find();
+    async getPosts(options:any): Promise<Post[]> {
+        return this.PostRepository.find(options);
     }
 
     async createPost({
