@@ -1,21 +1,52 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Post } from '../Schemas/Post.schema';
 import { PostRepository } from './Post.repository';
 import { UpdatePostDto } from './Dto/update-post.dto';
 import { CreatePostDto } from './Dto/create-post.dto';
+import { ReturnPostsType } from './Types/ReturnPostsType';
+import { ReturnContent } from './Types/ReturnContentPost';
 
 @Injectable()
 export class PostService {
     constructor(private readonly PostRepository: PostRepository) {}
 
-    async getContentById(postId: string): Promise<{content: string; postId: string}> {
-        return this.PostRepository.findOne({ postId });
+    async getContentById(postId: string): Promise<ReturnContent> {
+        const content = await this.PostRepository.findContent({ postId });
+        if (!content) {
+            throw new NotFoundException('Post not found');
+        }
+        return content;
     }
 
-    async getPosts(options:any): Promise<Post[]> {
-        return this.PostRepository.find(options);
+    async getPosts(
+        searchOptions: string,
+        page?: number,
+        existedOnFrontIds?: string[],
+    ): Promise<ReturnPostsType> {
+        const limitPerPage = 9;
+        const options = {
+            $or: [
+                { title: new RegExp(searchOptions, 'i') },
+                { content: new RegExp(searchOptions, 'i') },
+                { preview: new RegExp(searchOptions, 'i') },
+            ],
+            postId: { $nin: existedOnFrontIds },
+        };
+        const total = await this.PostRepository.count(options);
+        const data = page
+            ? await this.PostRepository.find(options)
+                  .skip((page - 1) * limitPerPage)
+                  .limit(limitPerPage)
+                  .exec()
+            : await this.PostRepository.find(options);
+
+        return {
+            data,
+            total,
+            page,
+        };
     }
 
     async createPost({

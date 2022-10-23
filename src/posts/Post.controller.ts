@@ -24,6 +24,24 @@ import { PostService } from './Post.service';
 import { Post } from '../Schemas/Post.schema';
 import { AuthenticatedGuard } from 'src/auth/Authenticated.guard';
 import { Request } from 'express';
+import { ReturnPostsType } from './Types/ReturnPostsType';
+import { ReturnContent } from './Types/ReturnContentPost';
+
+function validateFilterQuery(tested: unknown): string[] {
+    if (
+        Array.isArray(tested) &&
+        Array.prototype.every.call(
+            tested,
+            (id: unknown) => typeof id === 'string',
+        )
+    ) {
+        return tested;
+    }
+    if (!Array.isArray(tested) && typeof tested === 'string') {
+        return validateFilterQuery([tested]);
+    }
+    return [''];
+}
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -33,39 +51,23 @@ export class PostsController {
     @ApiOkResponse({ type: Post, description: 'Post by id' })
     @ApiNotFoundResponse()
     @Get(':postId')
-    async getContent(
-        @Param('postId') postId: string,
-    ): Promise<{ content: string; postId: string }> {
-        const posts = await this.postService.getContentById(postId);
-        if (!posts) {
-            throw new NotFoundException(
-                'Post not found, post.controller, str:37',
-            );
-        }
-        return posts;
+    async getContent(@Param('postId') postId: string): Promise<ReturnContent> {
+        return await this.postService.getContentById(postId);
     }
 
     @ApiOkResponse({ type: Post, isArray: true, description: 'All posts' })
     @ApiNotFoundResponse()
     @Get()
-    async getPosts(@Req() req: Request): Promise<Post[]> {
-        let options = {};
-
-        if (req.query.s) {
-            options = {
-                $or: [
-                    { title: new RegExp(req.query.s.toString(), 'i') },
-                    { content: new RegExp(req.query.s.toString(), 'i') },
-                    { preview: new RegExp(req.query.s.toString(), 'i') },
-                ],
-            };
-        }
-        const posts = await this.postService.getPosts(options);
-        if (!posts.length) {
-            throw new NotFoundException(
-                'Posts not found, post.controller, str:49',
-            );
-        }
+    async getPosts(@Req() req: Request): Promise<ReturnPostsType> {
+        const searchOptions = req.query.s ? req.query.s.toString() : '';
+        const page = req.query.p ? Number(req.query.p) : null;
+        const existedOnFrontIds: string[] = validateFilterQuery(req.query.e);
+        console.log(existedOnFrontIds);
+        const posts = await this.postService.getPosts(
+            searchOptions,
+            page,
+            existedOnFrontIds,
+        );
         return posts;
     }
 
@@ -86,9 +88,7 @@ export class PostsController {
     ): Promise<Post> {
         const post = await this.postService.updatePost(postId, updatePostDto);
         if (!post) {
-            throw new NotFoundException(
-                'Post not found, post.controller, str:71',
-            );
+            throw new NotFoundException('Post not found');
         }
         return post;
     }
@@ -98,9 +98,7 @@ export class PostsController {
     async deletePost(@Param('postId') postId: string): Promise<string> {
         const deletedPostId = await this.postService.deletePost(postId);
         if (!deletedPostId) {
-            throw new NotFoundException(
-                'Post not found, post.controller, str:81',
-            );
+            throw new NotFoundException('Post not found');
         }
         return JSON.stringify({ deletedPostId });
     }
