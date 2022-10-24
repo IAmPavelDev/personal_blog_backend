@@ -37,9 +37,9 @@ export class AuthenticatedGuard implements CanActivate {
         if (!user) {
             throw new UnauthorizedException('User not found');
         }
-        const { ...test } = user; //get all fields of user from db
-        delete test['_doc']['password']; // remove pwd field, for safety
-        request.user = test['_doc'];
+        const { ...userData } = user; //get all fields of user from db
+        delete userData['_doc']['password']; // remove pwd field, for safety
+        request.user = userData['_doc'];
         response.cookie(
             'token',
             jwtTokenGenerator({

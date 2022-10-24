@@ -27,18 +27,18 @@ import { Request } from 'express';
 import { ReturnPostsType } from './Types/ReturnPostsType';
 import { ReturnContent } from './Types/ReturnContentPost';
 
-function validateFilterQuery(tested: unknown): string[] {
+function validateFilterQuery(existedPostIds: unknown): string[] {
     if (
-        Array.isArray(tested) &&
+        Array.isArray(existedPostIds) &&
         Array.prototype.every.call(
-            tested,
+            existedPostIds,
             (id: unknown) => typeof id === 'string',
         )
     ) {
-        return tested;
+        return existedPostIds;
     }
-    if (!Array.isArray(tested) && typeof tested === 'string') {
-        return validateFilterQuery([tested]);
+    if (!Array.isArray(existedPostIds) && typeof existedPostIds === 'string') {
+        return validateFilterQuery([existedPostIds]);
     }
     return [''];
 }
@@ -62,7 +62,6 @@ export class PostsController {
         const searchOptions = req.query.s ? req.query.s.toString() : '';
         const page = req.query.p ? Number(req.query.p) : null;
         const existedOnFrontIds: string[] = validateFilterQuery(req.query.e);
-        console.log(existedOnFrontIds);
         const posts = await this.postService.getPosts(
             searchOptions,
             page,

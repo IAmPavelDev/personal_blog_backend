@@ -7,10 +7,14 @@ import { UpdatePostDto } from './Dto/update-post.dto';
 import { CreatePostDto } from './Dto/create-post.dto';
 import { ReturnPostsType } from './Types/ReturnPostsType';
 import { ReturnContent } from './Types/ReturnContentPost';
+import { StorageService } from 'src/storage/Storage.service';
 
 @Injectable()
 export class PostService {
-    constructor(private readonly PostRepository: PostRepository) {}
+    constructor(
+        private readonly PostRepository: PostRepository,
+        private readonly store: StorageService,
+    ) {}
 
     async getContentById(postId: string): Promise<ReturnContent> {
         const content = await this.PostRepository.findContent({ postId });

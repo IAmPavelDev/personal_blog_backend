@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import * as dotenv from 'dotenv';
 import { AuthModule } from './auth/Auth.module';
+import { StorageModule } from './storage/storage.module';
 
 dotenv.config();
 @Module({
@@ -14,6 +15,7 @@ dotenv.config();
         PostsModule,
         UsersModule,
         AuthModule,
+        StorageModule,
     ],
     controllers: [AppController],
     providers: [AppService],
