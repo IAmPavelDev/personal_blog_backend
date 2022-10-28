@@ -26,27 +26,17 @@ import { AuthenticatedGuard } from 'src/auth/Authenticated.guard';
 import { Request } from 'express';
 import { ReturnPostsType } from './Types/ReturnPostsType';
 import { ReturnContent } from './Types/ReturnContentPost';
-
-function validateFilterQuery(existedPostIds: unknown): string[] {
-    if (
-        Array.isArray(existedPostIds) &&
-        Array.prototype.every.call(
-            existedPostIds,
-            (id: unknown) => typeof id === 'string',
-        )
-    ) {
-        return existedPostIds;
-    }
-    if (!Array.isArray(existedPostIds) && typeof existedPostIds === 'string') {
-        return validateFilterQuery([existedPostIds]);
-    }
-    return [''];
-}
+import SessionGuard from 'src/auth/sessionGuard';
+import { StorageService } from 'src/storage/Storage.service';
+import { SearchFilterType } from './Types/SearchFilterType';
 
 @ApiTags('Posts')
 @Controller('posts')
 export class PostsController {
-    constructor(private readonly postService: PostService) {}
+    constructor(
+        private readonly postService: PostService,
+        private readonly store: StorageService,
+    ) {}
 
     @ApiOkResponse({ type: Post, description: 'Post by id' })
     @ApiNotFoundResponse()
@@ -55,16 +45,21 @@ export class PostsController {
         return await this.postService.getContentById(postId);
     }
 
+    @UseGuards(SessionGuard)
     @ApiOkResponse({ type: Post, isArray: true, description: 'All posts' })
     @ApiNotFoundResponse()
     @Get()
     async getPosts(@Req() req: Request): Promise<ReturnPostsType> {
         const searchOptions = req.query.s ? req.query.s.toString() : '';
         const page = req.query.p ? Number(req.query.p) : null;
-        const existedOnFrontIds: string[] = validateFilterQuery(req.query.e);
+        const searchType = (String(req.query.t) as SearchFilterType) ?? 'all';
+        const existedOnFrontIds: string[] = this.store.get(
+            req.cookies.sessionToken,
+        ).collectedPosts;
         const posts = await this.postService.getPosts(
             searchOptions,
             page,
+            searchType,
             existedOnFrontIds,
         );
         return posts;

@@ -6,8 +6,6 @@ export class StorageRepository {
     constructor(private data_store: IDataStoreType[]) {}
 
     createUser(userId: string) {
-        console.log(this.data_store);
-
         this.data_store.push({ userId, collectedPosts: [] });
     }
 
@@ -23,8 +21,6 @@ export class StorageRepository {
     }
 
     updateUserId(oldId: string, newId: string): IDataStoreType {
-        console.log(this.data_store);
-
         this.data_store = this.data_store.map((user: IDataStoreType) => {
             if (user.userId === oldId) {
                 user.userId = newId;

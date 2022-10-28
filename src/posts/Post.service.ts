@@ -7,14 +7,11 @@ import { UpdatePostDto } from './Dto/update-post.dto';
 import { CreatePostDto } from './Dto/create-post.dto';
 import { ReturnPostsType } from './Types/ReturnPostsType';
 import { ReturnContent } from './Types/ReturnContentPost';
-import { StorageService } from 'src/storage/Storage.service';
+import { SearchFilterType } from './Types/SearchFilterType';
 
 @Injectable()
 export class PostService {
-    constructor(
-        private readonly PostRepository: PostRepository,
-        private readonly store: StorageService,
-    ) {}
+    constructor(private readonly PostRepository: PostRepository) {}
 
     async getContentById(postId: string): Promise<ReturnContent> {
         const content = await this.PostRepository.findContent({ postId });
@@ -27,14 +24,29 @@ export class PostService {
     async getPosts(
         searchOptions: string,
         page?: number,
+        type: SearchFilterType = 'all',
         existedOnFrontIds?: string[],
     ): Promise<ReturnPostsType> {
         const limitPerPage = 9;
+        const filterReg = new RegExp(searchOptions, 'i');
+        const filterTypes = {
+            title: [{ title: filterReg }],
+            content: [{ content: filterReg }],
+            preview: [{ preview: filterReg }],
+            tags: [{ tags: { tagWord: filterReg } }],
+            all: [
+                { title: filterReg },
+                { content: filterReg },
+                { preview: filterReg },
+                { tags: { tagWord: filterReg } },
+            ],
+        };
         const options = {
             $or: [
-                { title: new RegExp(searchOptions, 'i') },
-                { content: new RegExp(searchOptions, 'i') },
-                { preview: new RegExp(searchOptions, 'i') },
+                { title: filterReg },
+                { content: filterReg },
+                { preview: filterReg },
+                { tags: { tagWord: filterReg } },
             ],
             postId: { $nin: existedOnFrontIds },
         };

@@ -28,8 +28,6 @@ export class UsersRepository {
         userFilterQuery: FilterQuery<User>,
         user: Partial<User>,
     ): Promise<User> {
-        console.log('user:  ', user);
-        console.log('updates:  ', userFilterQuery);
         return this.userModel.findOneAndUpdate(userFilterQuery, user, {
             new: true,
         });

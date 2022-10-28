@@ -7,10 +7,10 @@ export default class SessionGuard implements CanActivate {
     constructor(@Inject(StorageService) private store: StorageService) {}
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const req = context.switchToHttp().getRequest();
-        const res = context.switchToHttp().getResponse();
         const oldToken = req.cookies.sessionToken;
         const newToken = uuidv4();
-        res.cookie('sessionToken', newToken);
+        context.switchToHttp().getResponse().cookie('sessionToken', newToken);
+        req.cookies.sessionToken = newToken;
         if (oldToken) {
             if (this.store.updateUserId(oldToken, newToken)) return true;
         } else {

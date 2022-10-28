@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostDocument } from '../Schemas/Post.schema';
 import { FilterQuery, Model, CallbackError } from 'mongoose';
-import { ReturnContent } from './Types/ReturnContentPost';
 
 @Injectable()
 export class PostRepository {
@@ -18,7 +17,7 @@ export class PostRepository {
         return this.postModel.findOne(postFilterQuery).select('content postId');
     }
 
-    find(options: {}, existedOnFrontIds?: string[]) {
+    find(options: {}) {
         return this.postModel
             .find(options)
             .select('postId creationDate title preview tags');
