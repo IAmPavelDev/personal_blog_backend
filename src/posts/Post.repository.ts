@@ -20,7 +20,7 @@ export class PostRepository {
     find(options: {}) {
         return this.postModel
             .find(options)
-            .select('postId creationDate title preview tags');
+            .select('postId creationDate title preview tags previewImage');
     }
 
     async create(post: Post): Promise<Post> {

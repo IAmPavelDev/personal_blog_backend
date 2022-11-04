@@ -5,7 +5,10 @@ export class UpdatePostDto {
     title?: string;
 
     @ApiProperty()
-    preview: string;
+    preview?: string;
+
+    @ApiProperty()
+    previewImage?: string;
 
     @ApiProperty()
     content?: string;

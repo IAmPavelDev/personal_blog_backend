@@ -9,6 +9,9 @@ export class CreatePostDto {
     @ApiProperty()
     preview: string;
 
+    @ApiProperty()
+    previewImage: string;
+
     @ApiProperty({ required: false })
     tags?: Array<{ id: string; tagWord: string }>;
 }

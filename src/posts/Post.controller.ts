@@ -52,7 +52,9 @@ export class PostsController {
     async getPosts(@Req() req: Request): Promise<ReturnPostsType> {
         const searchOptions = req.query.s ? req.query.s.toString() : '';
         const page = req.query.p ? Number(req.query.p) : null;
-        const searchType = (String(req.query.t) as SearchFilterType) ?? 'all';
+
+        const searchType = String(req.query.t) as SearchFilterType;
+
         const existedOnFrontIds: string[] = this.store.get(
             req.cookies.sessionToken,
         ).collectedPosts;
@@ -69,7 +71,8 @@ export class PostsController {
     @ApiCreatedResponse({ type: Post })
     @PostDecorator()
     async createPost(@Body() createPostDto: CreatePostDto): Promise<Post> {
-        return this.postService.createPost(createPostDto);
+        const res = this.postService.createPost(createPostDto);
+        return res;
     }
 
     @ApiOkResponse({ type: Post, description: 'patched post' })

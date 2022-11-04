@@ -24,6 +24,10 @@ export class Post {
 
     @ApiProperty()
     @Prop()
+    previewImage: string;
+
+    @ApiProperty()
+    @Prop()
     content: string;
 
     @ApiProperty({ required: false })

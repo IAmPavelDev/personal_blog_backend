@@ -22,7 +22,7 @@ export class PostService {
     }
 
     async getPosts(
-        searchOptions: string,
+        searchOptions: string = '',
         page?: number,
         type: SearchFilterType = 'all',
         existedOnFrontIds?: string[],
@@ -42,12 +42,7 @@ export class PostService {
             ],
         };
         const options = {
-            $or: [
-                { title: filterReg },
-                { content: filterReg },
-                { preview: filterReg },
-                { tags: { tagWord: filterReg } },
-            ],
+            $or: filterTypes[type] ?? filterTypes['all'],
             postId: { $nin: existedOnFrontIds },
         };
         const total = await this.PostRepository.count(options);
@@ -69,6 +64,7 @@ export class PostService {
         title,
         content,
         preview,
+        previewImage,
         tags,
     }: CreatePostDto): Promise<Post> {
         return this.PostRepository.create({
@@ -77,6 +73,7 @@ export class PostService {
             title,
             content,
             preview,
+            previewImage,
             tags,
         });
     }

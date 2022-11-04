@@ -20,6 +20,7 @@ export class LoginGuard implements CanActivate {
             throw new UnauthorizedException('Password incorrect');
         }
         const payload = { userId: user.userId, username: user.username };
+
         const token = jwtTokenGenerator(payload);
         context.switchToHttp().getResponse().cookie('token', token);
         return true;
