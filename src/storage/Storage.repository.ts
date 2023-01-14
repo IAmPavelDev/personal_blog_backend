@@ -39,16 +39,20 @@ export class StorageRepository {
         userId,
         collectedPosts,
     }: IDataStoreType): IDataStoreType {
+        let userPostsIds: IDataStoreType | undefined;
         this.data_store = this.data_store.map((user: IDataStoreType) => {
             if (user.userId === userId) {
                 user.collectedPosts = [
                     ...user.collectedPosts,
-                    ...collectedPosts,
+                    ...collectedPosts.filter((newPost: string) => {
+                        user.collectedPosts.includes(newPost);
+                    }),
                 ];
+                userPostsIds = user;
             }
             return user;
         });
-        return this.findUserData(userId);
+        return userPostsIds;
     }
 
     deleteUser(userId: string) {

@@ -7,7 +7,6 @@ import {
     Param,
     Patch,
     Post as PostDecorator,
-    Query,
     Req,
     UseGuards,
 } from '@nestjs/common';
@@ -15,7 +14,6 @@ import {
     ApiCreatedResponse,
     ApiNotFoundResponse,
     ApiOkResponse,
-    ApiQuery,
     ApiTags,
 } from '@nestjs/swagger';
 import { CreatePostDto } from './Dto/create-post.dto';
@@ -33,16 +31,21 @@ import { SearchFilterType } from './Types/SearchFilterType';
 @ApiTags('Posts')
 @Controller('posts')
 export class PostsController {
-    constructor(
-        private readonly postService: PostService,
-        private readonly store: StorageService,
-    ) {}
+    constructor(private readonly postService: PostService) {}
 
+    @UseGuards(SessionGuard)
     @ApiOkResponse({ type: Post, description: 'Post by id' })
     @ApiNotFoundResponse()
     @Get(':postId')
-    async getContent(@Param('postId') postId: string): Promise<ReturnContent> {
-        return await this.postService.getContentById(postId);
+    async getPostContentById(
+        @Req() req: Request,
+        @Param() { postId }: { postId: string },
+    ): Promise<ReturnContent> {
+        const isOnlyContent = Boolean(req.query.mode);
+        console.log(postId);
+
+        if (isOnlyContent) return await this.postService.getContentById(postId);
+        return await this.postService.getAllPostDataById(postId);
     }
 
     @UseGuards(SessionGuard)
@@ -55,24 +58,21 @@ export class PostsController {
 
         const searchType = String(req.query.t) as SearchFilterType;
 
-        const existedOnFrontIds: string[] = this.store.get(
-            req.cookies.sessionToken,
-        ).collectedPosts;
-        const posts = await this.postService.getPosts(
+        const sessionUserId: string = req.cookies.sessionToken;
+
+        return await this.postService.getPosts(
             searchOptions,
             page,
             searchType,
-            existedOnFrontIds,
+            sessionUserId,
         );
-        return posts;
     }
 
     @UseGuards(AuthenticatedGuard)
     @ApiCreatedResponse({ type: Post })
     @PostDecorator()
     async createPost(@Body() createPostDto: CreatePostDto): Promise<Post> {
-        const res = this.postService.createPost(createPostDto);
-        return res;
+        return await this.postService.createPost(createPostDto);
     }
 
     @ApiOkResponse({ type: Post, description: 'patched post' })

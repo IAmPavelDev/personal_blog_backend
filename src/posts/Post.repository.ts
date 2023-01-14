@@ -9,15 +9,22 @@ export class PostRepository {
         @InjectModel(Post.name) private postModel: Model<PostDocument>,
     ) {}
 
-    async count(options: {}) {
+    async count(options: FilterQuery<Post>) {
         return await this.postModel.count(options).exec();
     }
 
-    findContent(postFilterQuery: FilterQuery<Post>) {
-        return this.postModel.findOne(postFilterQuery).select('content postId');
+    async findContentById(postFilterQuery: FilterQuery<Post>) {
+        return await this.postModel
+            .findOne(postFilterQuery)
+            .select('postId content')
+            .exec();
     }
 
-    find(options: {}) {
+    findById(postFilterQuery: FilterQuery<Post>) {
+        return this.postModel.findOne(postFilterQuery).exec();
+    }
+
+    find(options: FilterQuery<Post>) {
         return this.postModel
             .find(options)
             .select('postId creationDate title preview tags previewImage');

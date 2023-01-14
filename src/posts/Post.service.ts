@@ -8,13 +8,25 @@ import { CreatePostDto } from './Dto/create-post.dto';
 import { ReturnPostsType } from './Types/ReturnPostsType';
 import { ReturnContent } from './Types/ReturnContentPost';
 import { SearchFilterType } from './Types/SearchFilterType';
+import { StorageService } from '../storage/Storage.service';
 
 @Injectable()
 export class PostService {
-    constructor(private readonly PostRepository: PostRepository) {}
+    constructor(
+        private readonly PostRepository: PostRepository,
+        private readonly store: StorageService,
+    ) {}
+
+    async getAllPostDataById(postId: string): Promise<Post> {
+        const Post = await this.PostRepository.findById({ postId });
+        if (!Post) {
+            throw new Error('Post by id not found');
+        }
+        return Post;
+    }
 
     async getContentById(postId: string): Promise<ReturnContent> {
-        const content = await this.PostRepository.findContent({ postId });
+        const content = await this.PostRepository.findContentById({ postId });
         if (!content) {
             throw new NotFoundException('Post not found');
         }
@@ -22,13 +34,15 @@ export class PostService {
     }
 
     async getPosts(
-        searchOptions: string = '',
+        searchOptions = '',
         page?: number,
         type: SearchFilterType = 'all',
-        existedOnFrontIds?: string[],
+        sessionUserId?: string,
     ): Promise<ReturnPostsType> {
-        const limitPerPage = 9;
+        const limitPerPage = 8;
         const filterReg = new RegExp(searchOptions, 'i');
+        const existedOnFrontIds = this.store.get(sessionUserId).collectedPosts;
+
         const filterTypes = {
             title: [{ title: filterReg }],
             content: [{ content: filterReg }],
@@ -45,13 +59,20 @@ export class PostService {
             $or: filterTypes[type] ?? filterTypes['all'],
             postId: { $nin: existedOnFrontIds },
         };
+
         const total = await this.PostRepository.count(options);
+
         const data = page
             ? await this.PostRepository.find(options)
                   .skip((page - 1) * limitPerPage)
                   .limit(limitPerPage)
                   .exec()
             : await this.PostRepository.find(options);
+
+        this.store.updateCollected(
+            sessionUserId,
+            data.map((post: Post) => post.postId),
+        );
 
         return {
             data,
