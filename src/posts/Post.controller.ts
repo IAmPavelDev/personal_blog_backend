@@ -42,7 +42,6 @@ export class PostsController {
         @Param() { postId }: { postId: string },
     ): Promise<ReturnContent> {
         const isOnlyContent = Boolean(req.query.mode);
-        console.log(postId);
 
         if (isOnlyContent) return await this.postService.getContentById(postId);
         return await this.postService.getAllPostDataById(postId);
