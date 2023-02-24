@@ -12,6 +12,7 @@ export class LoginGuard implements CanActivate {
     constructor(@Inject(UsersService) private userService: UsersService) {}
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
+        console.log(request.cookies.token);
         const user = await this.userService.findOne(request.body.username);
         if (!user) {
             throw new UnauthorizedException('User not found');
@@ -22,7 +23,11 @@ export class LoginGuard implements CanActivate {
         const payload = { userId: user.userId, username: user.username };
 
         const token = jwtTokenGenerator(payload);
-        context.switchToHttp().getResponse().cookie('token', token);
+        context.switchToHttp().getResponse().cookie('token', token, {
+            sameSite: 'none',
+            secure: true,
+            httpOnly: true,
+        });
         return true;
     }
 }

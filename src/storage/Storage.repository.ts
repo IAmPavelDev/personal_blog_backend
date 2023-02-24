@@ -20,10 +20,11 @@ export class StorageRepository {
         return user;
     }
 
-    updateUserId(oldId: string, newId: string): IDataStoreType {
+    updateUserSession(oldId: string, newId: string): IDataStoreType {
         this.data_store = this.data_store.map((user: IDataStoreType) => {
             if (user.userId === oldId) {
                 user.userId = newId;
+                user.collectedPosts.length = 0;
             }
             return user;
         });
@@ -38,21 +39,24 @@ export class StorageRepository {
     updateCollectedPosts({
         userId,
         collectedPosts,
-    }: IDataStoreType): IDataStoreType {
-        let userPostsIds: IDataStoreType | undefined;
+    }: IDataStoreType): string[] {
+        const postsIds: string[] = [];
         this.data_store = this.data_store.map((user: IDataStoreType) => {
             if (user.userId === userId) {
-                user.collectedPosts = [
-                    ...user.collectedPosts,
-                    ...collectedPosts.filter((newPost: string) => {
-                        user.collectedPosts.includes(newPost);
-                    }),
-                ];
-                userPostsIds = user;
+                user.collectedPosts = [...user.collectedPosts, ...collectedPosts].filter(
+                    (el) => {
+                      if (el && postsIds.includes(el)) {
+                        return false;
+                      } else {
+                        el && postsIds.push(el);
+                        return true;
+                      }
+                    }
+                  );
             }
             return user;
         });
-        return userPostsIds;
+        return postsIds;
     }
 
     deleteUser(userId: string) {

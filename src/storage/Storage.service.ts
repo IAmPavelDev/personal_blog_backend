@@ -14,8 +14,8 @@ export class StorageService {
         return this.Store.findUserData(userId);
     }
 
-    updateUserId(oldId: string, newId: string) {
-        return this.Store.updateUserId(oldId, newId);
+    updateUserSession(oldId: string, newId: string) {
+        return this.Store.updateUserSession(oldId, newId);
     }
 
     updateCollected(userId: string, collectedPosts: string[]) {

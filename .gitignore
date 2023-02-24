@@ -401,3 +401,4 @@ Temporary Items
 # Local
 .env
 dist
+.vercel

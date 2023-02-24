@@ -24,8 +24,6 @@ import { AuthenticatedGuard } from 'src/auth/Authenticated.guard';
 import { Request } from 'express';
 import { ReturnPostsType } from './Types/ReturnPostsType';
 import { ReturnContent } from './Types/ReturnContentPost';
-import SessionGuard from 'src/auth/sessionGuard';
-import { StorageService } from 'src/storage/Storage.service';
 import { SearchFilterType } from './Types/SearchFilterType';
 
 @ApiTags('Posts')
@@ -33,7 +31,6 @@ import { SearchFilterType } from './Types/SearchFilterType';
 export class PostsController {
     constructor(private readonly postService: PostService) {}
 
-    @UseGuards(SessionGuard)
     @ApiOkResponse({ type: Post, description: 'Post by id' })
     @ApiNotFoundResponse()
     @Get(':postId')
@@ -43,11 +40,12 @@ export class PostsController {
     ): Promise<ReturnContent> {
         const isOnlyContent = Boolean(req.query.mode);
 
-        if (isOnlyContent) return await this.postService.getContentById(postId);
+        if (isOnlyContent) {
+            return await this.postService.getContentById(postId);
+        }
         return await this.postService.getAllPostDataById(postId);
     }
 
-    @UseGuards(SessionGuard)
     @ApiOkResponse({ type: Post, isArray: true, description: 'All posts' })
     @ApiNotFoundResponse()
     @Get()
@@ -57,14 +55,7 @@ export class PostsController {
 
         const searchType = String(req.query.t) as SearchFilterType;
 
-        const sessionUserId: string = req.cookies.sessionToken;
-
-        return await this.postService.getPosts(
-            searchOptions,
-            page,
-            searchType,
-            sessionUserId,
-        );
+        return await this.postService.getPosts(searchOptions, page, searchType);
     }
 
     @UseGuards(AuthenticatedGuard)

@@ -17,31 +17,36 @@ export class PostService {
         private readonly store: StorageService,
     ) {}
 
-    async getAllPostDataById(postId: string): Promise<Post> {
-        const Post = await this.PostRepository.findById({ postId });
+    async getAllPostDataById(
+        postId: string
+    ): Promise<Post | undefined> {
+
+        const Post: Post = await this.PostRepository.findById({ postId });
+
         if (!Post) {
             throw new Error('Post by id not found');
         }
         return Post;
     }
 
-    async getContentById(postId: string): Promise<ReturnContent> {
+    async getContentById(
+        postId: string
+    ): Promise<ReturnContent> {
         const content = await this.PostRepository.findContentById({ postId });
         if (!content) {
             throw new NotFoundException('Post not found');
         }
+
         return content;
     }
 
     async getPosts(
         searchOptions = '',
         page?: number,
-        type: SearchFilterType = 'all',
-        sessionUserId?: string,
+        type: SearchFilterType = 'all'
     ): Promise<ReturnPostsType> {
         const limitPerPage = 8;
         const filterReg = new RegExp(searchOptions, 'i');
-        const existedOnFrontIds = this.store.get(sessionUserId).collectedPosts;
 
         const filterTypes = {
             title: [{ title: filterReg }],
@@ -56,8 +61,7 @@ export class PostService {
             ],
         };
         const options = {
-            $or: filterTypes[type] ?? filterTypes['all'],
-            postId: { $nin: existedOnFrontIds },
+            $or: filterTypes[type] ?? filterTypes['all']
         };
 
         const total = await this.PostRepository.count(options);
@@ -68,11 +72,6 @@ export class PostService {
                   .limit(limitPerPage)
                   .exec()
             : await this.PostRepository.find(options);
-
-        this.store.updateCollected(
-            sessionUserId,
-            data.map((post: Post) => post.postId),
-        );
 
         return {
             data,

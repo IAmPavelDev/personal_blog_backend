@@ -12,7 +12,7 @@ export default class SessionGuard implements CanActivate {
         context.switchToHttp().getResponse().cookie('sessionToken', newToken);
         req.cookies.sessionToken = newToken;
         if (oldToken) {
-            if (this.store.updateUserId(oldToken, newToken)) return true;
+            if (this.store.updateUserSession(oldToken, newToken)) return true;
         } else {
             if (this.store.create(newToken)) return true;
         }
