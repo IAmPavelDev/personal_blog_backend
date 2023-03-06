@@ -33,7 +33,7 @@ export class AppController {
             httpOnly: true,
         });
 
-        if (oldToken.length) {
+        if (oldToken) {
             this.store.updateUserSession(oldToken, newToken);
         } else {
             this.store.create(newToken);
