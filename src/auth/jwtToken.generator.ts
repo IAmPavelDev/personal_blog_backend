@@ -3,6 +3,6 @@ export default function jwtTokenGenerator(
     payload: object,
 ): string {
     return jwt.sign({payload}, process.env.JWT_SECRET_KEY, {
-        expiresIn: '1h',
+        expiresIn: '30d',
     });
 }

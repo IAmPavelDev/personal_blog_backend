@@ -1,17 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
 export class CreatePostDto {
-    @ApiProperty()
     title: string;
 
-    @ApiProperty()
     content: string;
 
-    @ApiProperty()
     preview: string;
 
-    @ApiProperty()
     previewImage: string;
 
-    @ApiProperty({ required: false })
+    previewImagePlaceholder: string;
+
     tags?: Array<{ id: string; tagWord: string }>;
 }

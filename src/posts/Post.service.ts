@@ -85,6 +85,7 @@ export class PostService {
         content,
         preview,
         previewImage,
+        previewImagePlaceholder,
         tags,
     }: CreatePostDto): Promise<Post> {
         return this.PostRepository.create({
@@ -94,6 +95,7 @@ export class PostService {
             content,
             preview,
             previewImage,
+            previewImagePlaceholder,
             tags,
         });
     }

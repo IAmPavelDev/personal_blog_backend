@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 import { UsersService } from 'src/users/users.service';
+import CheckToken from './CheckTokenIsValid';
 import jwtTokenGenerator from './jwtToken.generator';
 
 interface UserNameJwtPayload extends jwt.JwtPayload {
@@ -23,29 +24,30 @@ export class AuthenticatedGuard implements CanActivate {
         if (!request.cookies.token) {
             throw new UnauthorizedException('Token not found');
         }
-        const isValid = jwt.verify(
-            request.cookies.token,
-            process.env.JWT_SECRET_KEY,
-        );
-        if (!isValid) {
-            throw new UnauthorizedException('Invalid token');
-        }
-        const { payload } = <UserNameJwtPayload>(
-            jwt.decode(request.cookies.token)
-        );
-        const user = await this.usersService.findOne(payload.username);
+        
+        const { username } = CheckToken(request.cookies.token);
+
+        const user = await this.usersService.findOne(username);
         if (!user) {
             throw new UnauthorizedException('User not found');
         }
         const { ...userData } = user; //get all fields of user from db
         delete userData['_doc']['password']; // remove pwd field, for safety
-        request.user = userData['_doc'];
+
+        if (!userData) {
+            throw new UnauthorizedException('Can`t find user');
+        }
         response.cookie(
             'token',
             jwtTokenGenerator({
-                userId: request.user.userId,
-                username: request.user.username,
+                username: userData['_doc']['username'],
+                userId: userData['_doc']['userId'],
             }),
+            {
+                sameSite: 'none',
+                secure: true,
+                httpOnly: true,
+            },
         );
         return true;
     }
