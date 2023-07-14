@@ -21,7 +21,10 @@ export class PostRepository {
     }
 
     findById(postFilterQuery: FilterQuery<Post>) {
-        return this.postModel.findOne(postFilterQuery).exec();
+        return this.postModel
+            .findOne(postFilterQuery)
+            .select('postId creationDate title preview tags previewImage')
+            .exec();
     }
 
     find(options: FilterQuery<Post>) {

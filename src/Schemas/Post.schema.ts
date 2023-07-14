@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { Tag } from 'src/tags/Dto/Tag';
 
 export type PostDocument = Post & Document;
 
@@ -26,8 +27,8 @@ export class Post {
     @Prop()
     content: string;
 
-    @Prop(Array<{ id: string; tagWord: string }>)
-    tags: Array<{ id: string; tagWord: string }>;
+    @Prop(Array<Tag>)
+    tags: Array<Tag>;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);

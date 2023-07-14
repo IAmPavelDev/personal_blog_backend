@@ -1,3 +1,5 @@
+import { Tag } from 'src/tags/Dto/Tag';
+
 export class CreatePostDto {
     title: string;
 
@@ -9,5 +11,5 @@ export class CreatePostDto {
 
     previewImagePlaceholder: string;
 
-    tags?: Array<{ id: string; tagWord: string }>;
+    tags?: Array<Tag>;
 }

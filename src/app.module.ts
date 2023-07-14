@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import * as dotenv from 'dotenv';
 import { AuthModule } from './auth/Auth.module';
 import { StorageModule } from './storage/storage.module';
+import { TagsModule } from './tags/Tags.module';
 
 dotenv.config();
 @Module({
@@ -14,6 +15,7 @@ dotenv.config();
         MongooseModule.forRoot(process.env.DB_CONNECTION),
         PostsModule,
         UsersModule,
+        TagsModule,
         AuthModule,
         StorageModule,
     ],
@@ -21,5 +23,3 @@ dotenv.config();
     providers: [AppService],
 })
 export class AppModule {}
-
-
