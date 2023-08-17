@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Post } from '../Schemas/Post.schema';
@@ -8,19 +13,22 @@ import { CreatePostDto } from './Dto/create-post.dto';
 import { ReturnPostsType } from './Types/ReturnPostsType';
 import { ReturnContent } from './Types/ReturnContentPost';
 import { SearchFilterType } from './Types/SearchFilterType';
-import { StorageService } from '../storage/Storage.service';
 import { TagsService } from '../tags/Tags.service';
 import { Tag } from 'src/Schemas/Tag.schema';
+import { UsersService } from '../users/users.service';
+import { FilterQuery } from 'mongoose';
 
 @Injectable()
 export class PostService {
     constructor(
         private readonly PostRepository: PostRepository,
+        @Inject(forwardRef(() => TagsService))
         private readonly TagsService: TagsService,
-        private readonly store: StorageService,
+        @Inject(forwardRef(() => UsersService))
+        private readonly UsersService: UsersService,
     ) {}
 
-    async getAllPostDataById(postId: string): Promise<Post | undefined> {
+    async getPostById(postId: string): Promise<Post | undefined> {
         const Post: Post = await this.PostRepository.findById({ postId });
 
         if (!Post) {
@@ -39,27 +47,37 @@ export class PostService {
     }
 
     async getPosts(
-        searchOptions = '',
+        query = '',
         page?: number,
-        type: SearchFilterType = 'all',
+        tagIds: string[] = [],
     ): Promise<ReturnPostsType> {
         const limitPerPage = 8;
-        const filterReg = new RegExp(searchOptions, 'i');
+        const filterReg = new RegExp(query, 'i');
+        const q =
+            tagIds.length > 0
+                ? {
+                      tags: {
+                          $elemMatch: {
+                              id: {
+                                  $in: tagIds,
+                              },
+                          },
+                      },
+                  }
+                : {};
 
-        const filterTypes = {
-            title: [{ title: filterReg }],
-            content: [{ content: filterReg }],
-            preview: [{ preview: filterReg }],
-            tags: [{ tags: { tagWord: filterReg } }],
-            all: [
-                { title: filterReg },
-                { content: filterReg },
-                { preview: filterReg },
-                { tags: { tagWord: filterReg } },
-            ],
-        };
         const options = {
-            $or: filterTypes[type] ?? filterTypes['all'],
+            $and: [
+                {
+                    $or: [
+                        { title: filterReg },
+                        { content: filterReg },
+                        { preview: filterReg },
+                        { tags: { tagWord: filterReg } },
+                    ],
+                },
+                q,
+            ],
         };
 
         const total = await this.PostRepository.count(options);
@@ -89,6 +107,8 @@ export class PostService {
         const createdPost = await this.PostRepository.create({
             postId: uuidv4(),
             creationDate: new Date(),
+            likes: [],
+            views: [],
             title,
             content,
             preview,
@@ -145,12 +165,60 @@ export class PostService {
         return this.PostRepository.update({ postId }, postUpdates);
     }
 
-    async deletePost(postId: string): Promise<string> {
-        const { tags } = await this.PostRepository.findById({ postId });
+    async pushView(postId: string, sessionId: string) {
+        const post = await this.PostRepository.findById({ postId });
 
-        tags.forEach((tag: Tag) => {
-            this.TagsService.deletePostId(tag.id, postId);
-        });
+        const userId = (
+            await this.UsersService.pushPostToViews(sessionId, postId)
+        ).userId;
+
+        post.views = Array.from(new Set([...post.views, userId]));
+        post.save();
+    }
+
+    async pushLike(postId: string, sessionId: string) {
+        const post = await this.PostRepository.findById({ postId });
+
+        const userId = (
+            await this.UsersService.pushPostToLikes(sessionId, postId)
+        ).userId;
+
+        post.likes = Array.from(new Set([...post.likes, userId]));
+        post.save();
+
+        return 'success';
+    }
+
+    async removeLike(postId: string, sessionId: string) {
+        const post = await this.PostRepository.findById({ postId });
+
+        const userId = (
+            await this.UsersService.removePostFromLikes(sessionId, postId)
+        ).userId;
+
+        post.likes = post.likes.filter((id: string) => id !== userId);
+        post.save();
+
+        return 'success';
+    }
+
+    async deleteTag(tagId: string, postId: string): Promise<Post> {
+        const post = await this.PostRepository.findById({ postId });
+
+        post.tags = post.tags.filter((t) => t.id !== tagId);
+        await post.save();
+
+        return post;
+    }
+
+    async deletePost(postId: string): Promise<string> {
+        const post = await this.PostRepository.findById({ postId });
+
+        if (!!post) {
+            post.tags.forEach((tag: Tag) => {
+                this.TagsService.deletePostId(tag.id, postId);
+            });
+        }
 
         return this.PostRepository.delete({ postId });
     }

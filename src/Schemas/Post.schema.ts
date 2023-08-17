@@ -29,6 +29,12 @@ export class Post {
 
     @Prop(Array<Tag>)
     tags: Array<Tag>;
+
+    @Prop()
+    likes: Array<string>;
+
+    @Prop()
+    views: Array<string>;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);

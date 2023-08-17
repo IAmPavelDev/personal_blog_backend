@@ -8,12 +8,12 @@ interface UserNameJwtPayload extends jwt.JwtPayload {
     };
 }
 
-export default function CheckToken(token: string) {
+export default function CheckToken(token: string): string {
     try {
         const { payload } = <UserNameJwtPayload>(
             jwt.verify(token, process.env.JWT_SECRET_KEY)
         );
-        return { username: payload.username };
+        return payload.userId;
     } catch {
         throw new UnauthorizedException('Invalid token');
     }

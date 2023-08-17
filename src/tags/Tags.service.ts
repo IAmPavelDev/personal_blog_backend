@@ -1,20 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { TagsRepository } from './Tags.repository';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Tag } from './Dto/Tag';
+import { PostService } from '../posts/Post.service';
 
 @Injectable()
 export class TagsService {
-    constructor(private readonly TagsRepository: TagsRepository) {}
+    constructor(
+        private readonly TagsRepository: TagsRepository,
+        @Inject(forwardRef(() => PostService))
+        private readonly PostsService: PostService,
+    ) {}
 
     async getTagById(tagId: string): Promise<Tag | undefined> {
-        const Tag: Tag = await this.TagsRepository.findTagById({ tagId });
+        const Tag: Tag = await this.TagsRepository.findTagById(tagId);
 
         if (!Tag) {
             throw new Error('Tag by id ' + tagId + ' not found');
         }
         return Tag;
+    }
+
+    async getTagsByIds(tagIds: string[]) {
+        return await this.TagsRepository.find({
+            id: {
+                $elemMatch: {
+                    $in: tagIds,
+                },
+            },
+        });
     }
 
     async getTags(searchOptions: string): Promise<Tag[]> {
@@ -33,17 +48,17 @@ export class TagsService {
         }));
     }
 
-    async createTag({ content, postsIds }: Omit<Tag, 'id'>): Promise<Tag> {
+    async createTag({ content }: Omit<Tag, 'id' | 'postsIds'>): Promise<Tag> {
         return this.TagsRepository.create({
             id: uuidv4(),
             content,
-            postsIds,
+            postsIds: [],
         });
     }
     async pushPostId(tagId: string, postId: string): Promise<Tag> {
-        const { postsIds: oldIds } = await this.TagsRepository.findTagById({
+        const { postsIds: oldIds } = await this.TagsRepository.findTagById(
             tagId,
-        });
+        );
         return await this.TagsRepository.update(
             { tagId },
             { postsIds: [...oldIds, postId] },
@@ -54,20 +69,33 @@ export class TagsService {
         tagId: string,
         postId: string,
     ): Promise<Tag> | undefined {
-        const { postsIds: oldIds } = await this.TagsRepository.findTagById({
-            tagId,
-        });
-        const updatedTag = await this.TagsRepository.update(
-            { tagId },
-            { postsIds: oldIds.filter((id: string) => id !== postId) },
-        );
-        if (!updatedTag.postsIds) {
-            this.TagsRepository.delete({ tagId });
-            return;
+        const tag = await this.TagsRepository.findTagById(tagId);
+
+        if (!!tag) {
+            tag.postsIds = tag.postsIds.filter((id: string) => id !== postId);
+            if (!tag.postsIds) {
+                await this.TagsRepository.delete({ tagId });
+                return;
+            }
+            tag.save();
+            return tag;
         }
-        return updatedTag;
     }
-    // async deletePost(postId: string): Promise<string> {
-    //     return this.PostRepository.delete({ postId });
-    // }
+    async deleteTag(tagId: string): Promise<string> {
+        const postsIds = (await this.getTagById(tagId))[0].postsIds;
+
+        let rest = [];
+
+        for (const postId of postsIds) {
+            const deletedPostId = (
+                await this.PostsService.deleteTag(tagId, postId)
+            ).postId;
+            rest = postsIds.filter((id: string) => id !== deletedPostId);
+        }
+        if (!!rest.length)
+            throw new Error(
+                'Can`t delete tag from every post in postsIds array',
+            );
+        return this.TagsRepository.delete({ tagId });
+    }
 }

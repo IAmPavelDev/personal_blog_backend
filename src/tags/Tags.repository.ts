@@ -7,9 +7,9 @@ import { Tag, TagDocument } from '../Schemas/Tag.schema';
 export class TagsRepository {
     constructor(@InjectModel(Tag.name) private tagModel: Model<TagDocument>) {}
 
-    async findTagById(postFilterQuery: FilterQuery<Tag>) {
+    async findTagById(id: string) {
         return await this.tagModel
-            .findOne(postFilterQuery)
+            .findOne({ id })
             .select('id content postsIds')
             .exec();
     }
@@ -23,15 +23,8 @@ export class TagsRepository {
 
     async create(tag: Tag): Promise<Tag> {
         const newTag = new this.tagModel(tag);
-        let tagCarr = null;
-        newTag.save((err, tag) => {
-            if (err) {
-                return;
-            }
-            tagCarr = tag.toObject();
-        });
-        delete tagCarr['_id'];
-        return tagCarr;
+        newTag.save();
+        return newTag as Tag;
     }
 
     async update(

@@ -9,14 +9,12 @@ export class UsersRepository {
         @InjectModel(User.name) private userModel: Model<UserDocument>,
     ) {}
 
-    async findOne(postFilterQuery: FilterQuery<User>): Promise<User> {
-        return this.userModel.findOne({
-            username: postFilterQuery.filterQuery,
-        });
+    async find(userFilterQuery: FilterQuery<User>): Promise<User[]> {
+        return this.userModel.find(userFilterQuery);
     }
 
-    async find(): Promise<User[]> {
-        return this.userModel.find();
+    async findOne(userFilterQuery: FilterQuery<User>) {
+        return this.userModel.findOne(userFilterQuery);
     }
 
     async create(user: User): Promise<User> {
@@ -33,7 +31,29 @@ export class UsersRepository {
         });
     }
 
-    async delete(userId: FilterQuery<User>): Promise<string> {
-        return (await this.userModel.findOneAndDelete(userId)).name;
+    async updateStatisticArray(
+        userFilterQuery: FilterQuery<User>,
+        postId: string,
+        type: 'pushView' | 'pushLike' | 'removeLike',
+    ) {
+        const user = await this.userModel.findOne(userFilterQuery);
+        switch (type) {
+            case 'pushLike':
+                user.likes = Array.from(new Set([...user.likes, postId]));
+                break;
+            case 'pushView':
+                user.views = Array.from(new Set([...user.views, postId]));
+                break;
+            case 'removeLike':
+                user.likes = user.likes.filter((id: string) => id !== postId);
+                break;
+        }
+        await user.save();
+        return user as User;
+    }
+
+    async delete(userFilterQuery: FilterQuery<User>): Promise<string> {
+        await this.userModel.findOneAndDelete(userFilterQuery);
+        return 'userFilterQuery.userId';
     }
 }

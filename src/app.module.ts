@@ -1,12 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PostsModule } from './posts/Post.module';
-import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import * as dotenv from 'dotenv';
-import { AuthModule } from './auth/Auth.module';
-import { StorageModule } from './storage/storage.module';
 import { TagsModule } from './tags/Tags.module';
 
 dotenv.config();
@@ -16,10 +13,7 @@ dotenv.config();
         PostsModule,
         UsersModule,
         TagsModule,
-        AuthModule,
-        StorageModule,
     ],
-    controllers: [AppController],
     providers: [AppService],
 })
 export class AppModule {}

@@ -14,23 +14,15 @@ export class PostRepository {
     }
 
     async findContentById(postFilterQuery: FilterQuery<Post>) {
-        return await this.postModel
-            .findOne(postFilterQuery)
-            .select('postId content')
-            .exec();
+        return this.postModel.findOne(postFilterQuery).select('postId content');
     }
 
     findById(postFilterQuery: FilterQuery<Post>) {
-        return this.postModel
-            .findOne(postFilterQuery)
-            .select('postId creationDate title preview tags previewImage')
-            .exec();
+        return this.postModel.findOne(postFilterQuery);
     }
 
     find(options: FilterQuery<Post>) {
-        return this.postModel
-            .find(options)
-            .select('postId creationDate title preview tags previewImage');
+        return this.postModel.find(options).select('-content');
     }
 
     async create(post: Post): Promise<Post> {
