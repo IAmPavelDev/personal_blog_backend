@@ -4,7 +4,7 @@ import {
     Inject,
     UnauthorizedException,
 } from '@nestjs/common';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import CheckToken from './CheckTokenIsValid';
 import { User } from '../Schemas/User.schema';
 

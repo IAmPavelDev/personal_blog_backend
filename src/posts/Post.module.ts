@@ -4,7 +4,7 @@ import { PostsController } from './Post.controller';
 import { PostRepository } from './Post.repository';
 import { PostService } from './Post.service';
 import { Post, PostSchema } from '../Schemas/Post.schema';
-import { UsersModule } from 'src/users/users.module';
+import { UsersModule } from '../users/users.module';
 import { TagsModule } from '../tags/Tags.module';
 import { TagsService } from '../tags/Tags.service';
 import { TagsRepository } from '../tags/Tags.repository';

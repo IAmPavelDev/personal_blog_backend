@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TagsController } from './Tags.controller';
 import { TagsRepository } from './Tags.repository';
 import { TagsService } from './Tags.service';
-import { UsersModule } from 'src/users/users.module';
+import { UsersModule } from '../users/users.module';
 import { Tag, TagSchema } from '../Schemas/Tag.schema';
 import { PostRepository } from '../posts/Post.repository';
 import { PostService } from '../posts/Post.service';
