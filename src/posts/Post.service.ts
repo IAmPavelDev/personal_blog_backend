@@ -12,11 +12,9 @@ import { UpdatePostDto } from './Dto/update-post.dto';
 import { CreatePostDto } from './Dto/create-post.dto';
 import { ReturnPostsType } from './Types/ReturnPostsType';
 import { ReturnContent } from './Types/ReturnContentPost';
-import { SearchFilterType } from './Types/SearchFilterType';
 import { TagsService } from '../tags/Tags.service';
 import { Tag } from 'src/Schemas/Tag.schema';
 import { UsersService } from '../users/users.service';
-import { FilterQuery } from 'mongoose';
 
 @Injectable()
 export class PostService {
@@ -29,7 +27,7 @@ export class PostService {
     ) {}
 
     async getPostById(postId: string): Promise<Post | undefined> {
-        const Post: Post = await this.PostRepository.findById({ postId });
+        const Post = await this.PostRepository.findById({ postId });
 
         if (!Post) {
             throw new Error('Post by id not found');
@@ -179,9 +177,11 @@ export class PostService {
     async pushLike(postId: string, sessionId: string) {
         const post = await this.PostRepository.findById({ postId });
 
-        const userId = (
-            await this.UsersService.pushPostToLikes(sessionId, postId)
-        ).userId;
+        const user = await this.UsersService.pushPostToLikes(sessionId, postId);
+
+        const userId = user.userId;
+
+        console.log(user, sessionId, post);
 
         post.likes = Array.from(new Set([...post.likes, userId]));
         post.save();

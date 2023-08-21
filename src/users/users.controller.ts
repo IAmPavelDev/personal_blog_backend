@@ -29,39 +29,12 @@ export class UsersController {
     @Get('sessionEntrance')
     async session(@Req() req: Request, @Res() res: Response) {
         const oldToken = req.cookies.sessionToken;
-
-        const newToken = uuidv4();
-
-        let user: Omit<User, 'password'> | undefined;
-
-        if (!!oldToken) {
-            user = await this.userService.updateSessionToken(
-                oldToken,
-                newToken,
-            );
-
-            if (user.sessionIds.indexOf(newToken) === -1) {
-                res.send({ status: 'error' });
-                return;
-            }
-        } else {
-            user = await this.userService.createSession(newToken);
-            if (user.sessionIds.indexOf(newToken) === -1) {
-                res.send({ status: 'error' });
-                return;
-            }
-        }
-
-        if (!user || !!user['password']) {
-            throw new Error(
-                'Error while logging in user with id: ' + user?.userId,
-            );
-        }
-        res.cookie('sessionToken', newToken, {
-            sameSite: 'none',
-            secure: true,
-            httpOnly: true,
-            expires: new Date(Date.now() + 7884008640), //3 months
+        const user = await this.userService.findOne({
+            sessionIds: {
+                $elemMatch: {
+                    $eq: oldToken,
+                },
+            },
         });
 
         res.send({ status: 'success', user });
@@ -73,32 +46,11 @@ export class UsersController {
         @Req() req: Request,
         @Body() { username, password }: { username: string; password: string },
     ) {
-        const { token: loginToken, sessionToken } = req.cookies;
-        let unAuthorizedSessionData: User = undefined;
-        if (sessionToken) {
-            unAuthorizedSessionData =
-                await this.userService.findOneUserBySessionId(
-                    sessionToken,
-                    false,
-                );
-        }
+        const { token: loginToken } = req.cookies;
 
         const { newToken, userId } = loginToken
-            ? await this.userService.loginWithToken(
-                  loginToken,
-                  unAuthorizedSessionData,
-              )
-            : await this.userService.loginWithUserData(
-                  username,
-                  password,
-                  unAuthorizedSessionData,
-              );
-
-        unAuthorizedSessionData &&
-            (await this.userService.delete(
-                unAuthorizedSessionData.userId,
-                unAuthorizedSessionData.password,
-            ));
+            ? await this.userService.loginWithToken(loginToken)
+            : await this.userService.loginWithUserData(username, password);
 
         res.cookie('token', newToken, {
             sameSite: 'none',

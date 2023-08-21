@@ -18,21 +18,17 @@ interface UserNameJwtPayload extends jwt.JwtPayload {
 export class UsersService {
     constructor(private usersRepository: UsersRepository) {}
 
-    async findOne(filterQuery: FilterQuery<User>): Promise<User | undefined> {
+    async findOne(filterQuery: FilterQuery<User>) {
         return await this.usersRepository.findOne(filterQuery);
     }
 
-    findOneUserBySessionId(
-        sessionId: string,
-        isRegistered?: boolean,
-    ): Promise<User | undefined> {
+    findOneUserBySessionId(sessionId: string) {
         return this.usersRepository.findOne({
             sessionIds: {
                 $elemMatch: {
                     $eq: sessionId,
                 },
             },
-            isRegistered,
         });
     }
 
@@ -40,57 +36,56 @@ export class UsersService {
         return this.usersRepository.find({ isRegistered: true });
     }
 
-    async updateSessionToken(
-        oldToken: string,
-        newToken: string,
-    ): Promise<Omit<User, 'password'>> {
+    async pushPostToViews(sessionId: string, postId: string) {
         const query: FilterQuery<User> = {
             sessionIds: {
                 $elemMatch: {
-                    $eq: oldToken,
+                    $eq: sessionId,
                 },
             },
         };
 
         const user = await this.usersRepository.findOne(query);
 
-        user.sessionIds = [
-            ...user.sessionIds.filter((id: string) => id !== oldToken),
-            newToken,
-        ];
+        if (!user) {
+            throw new Error('User not found');
+        }
 
-        await user.save();
+        user.views = Array.from(new Set([...user.views, postId]));
 
-        delete user.password;
+        user.save();
 
-        return user as Omit<User, 'password'>;
+        return user as User;
     }
+    async pushPostToLikes(sessionId: string, postId: string) {
+        const user = await this.findOneUserBySessionId(sessionId);
 
-    pushPostToViews(sessionId: string, postId: string) {
-        return this.usersRepository.updateStatisticArray(
-            { currentSessionId: sessionId },
-            postId,
-            'pushView',
-        );
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        user.likes = Array.from(new Set([...user.likes, postId]));
+
+        user.save();
+
+        return user as User;
     }
-    pushPostToLikes(sessionId: string, postId: string) {
-        return this.usersRepository.updateStatisticArray(
-            { currentSessionId: sessionId },
-            postId,
-            'pushLike',
-        );
-    }
-    removePostFromLikes(sessionId: string, postId: string) {
-        return this.usersRepository.updateStatisticArray(
-            { currentSessionId: sessionId },
-            postId,
-            'removeLike',
-        );
+    async removePostFromLikes(sessionId: string, postId: string) {
+        const user = await this.findOneUserBySessionId(sessionId);
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        user.likes = user.likes.filter((like: string) => like !== postId);
+
+        user.save();
+
+        return user as User;
     }
 
     async loginWithToken(
         oldToken: string,
-        sessionData: User | null,
     ): Promise<{ newToken: string; userId: string }> {
         const {
             payload: { userId },
@@ -102,20 +97,6 @@ export class UsersService {
 
         if (!user) {
             throw new UnauthorizedException('User not found');
-        }
-
-        if (!!sessionData) {
-            const { views, likes } = sessionData;
-
-            [views, likes].forEach((field: string[], idx: number) => {
-                field.forEach((postId: string) => {
-                    this.usersRepository.updateStatisticArray(
-                        { userId },
-                        postId,
-                        !!idx ? 'pushLike' : 'pushView',
-                    );
-                });
-            });
         }
 
         const { ...userData } = user; //get all fields of user from db
@@ -137,7 +118,6 @@ export class UsersService {
     async loginWithUserData(
         login: string,
         password: string,
-        sessionData: User | null,
     ): Promise<{ newToken: string; userId: string }> {
         const filterQuery = {
             $and: [
@@ -153,20 +133,6 @@ export class UsersService {
         }
         if (!(await bcrypt.compare(password, user.password))) {
             throw new UnauthorizedException('Password incorrect');
-        }
-
-        if (!!sessionData) {
-            const { views, likes } = sessionData;
-
-            [views, likes].forEach((field: string[], idx: number) => {
-                field.forEach((postId: string) => {
-                    this.usersRepository.updateStatisticArray(
-                        filterQuery,
-                        postId,
-                        !!idx ? 'pushLike' : 'pushView',
-                    );
-                });
-            });
         }
 
         const payload = { userId: user.userId, username: user.username };
@@ -201,7 +167,6 @@ export class UsersService {
 
         const oldSessionData: User = await this.findOneUserBySessionId(
             oldToken,
-            false,
         );
 
         const oldSessionIds = oldSessionData?.sessionIds

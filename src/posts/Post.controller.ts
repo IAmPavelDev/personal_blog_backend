@@ -39,11 +39,10 @@ export class PostsController {
 
         const isOnlyContent = Boolean(req.query.mode);
 
+        await this.postService.pushView(postId, sessionId);
         if (isOnlyContent) {
-            await this.postService.pushView(postId, sessionId);
             return await this.postService.getContentById(postId);
         } else {
-            await this.postService.pushView(postId, sessionId);
             return await this.postService.getPostById(postId);
         }
     }
@@ -81,9 +80,10 @@ export class PostsController {
     }
 
     @PostDecorator('rate')
-    async likePost(
+    async ratePost(
         @Body()
-        { postId, userId, type }: RatePostDto,
+        { postId, type }: RatePostDto,
+        @Req() req: Request,
         @Res() res: Response,
     ) {
         if (type !== 'like' && type !== 'dislike') {
@@ -91,9 +91,11 @@ export class PostsController {
             throw new Error('Invalid post rate type operation');
         }
 
+        const sessionId = req.cookies.sessionToken;
+
         if (
             type === 'like' &&
-            (await this.postService.pushLike(postId, userId)) !== 'success'
+            (await this.postService.pushLike(postId, sessionId)) !== 'success'
         ) {
             res.status(HttpStatus.BAD_REQUEST).send();
             throw new Error('error while liking post: ' + postId);
@@ -101,7 +103,7 @@ export class PostsController {
 
         if (
             type === 'dislike' &&
-            (await this.postService.removeLike(postId, userId)) !== 'success'
+            (await this.postService.removeLike(postId, sessionId)) !== 'success'
         ) {
             res.status(HttpStatus.BAD_REQUEST).send();
             throw new Error('error while disliking post: ' + postId);
