@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import jwtTokenGenerator from '../Guards/jwtToken.generator';
 import * as jwt from 'jsonwebtoken';
 import { FilterQuery } from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 
 interface UserNameJwtPayload extends jwt.JwtPayload {
     payload: {
@@ -203,6 +204,7 @@ export class UsersService {
 
     async delete(userId: string, password: string): Promise<string> {
         const user: User = await this.usersRepository.findOne({ userId });
+
         if (
             user.isRegistered &&
             !(await bcrypt.compare(user.password, password))

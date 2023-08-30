@@ -48,9 +48,18 @@ export class UsersController {
     ) {
         const { token: loginToken } = req.cookies;
 
-        const { newToken, userId } = loginToken
-            ? await this.userService.loginWithToken(loginToken)
-            : await this.userService.loginWithUserData(username, password);
+        const userData =
+            username && password
+                ? await this.userService.loginWithUserData(username, password)
+                : loginToken
+                ? await this.userService.loginWithToken(loginToken)
+                : null;
+
+        if (!userData) {
+            throw new Error('no login data provided');
+        }
+
+        const { newToken, userId } = userData;
 
         res.cookie('token', newToken, {
             sameSite: 'none',
