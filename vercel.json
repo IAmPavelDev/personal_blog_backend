@@ -17,7 +17,6 @@
           ]
         }
       ],
-    "dest":"src/main.ts",
     "methods": [
       "GET",
       "POST",
